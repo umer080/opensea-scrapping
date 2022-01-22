@@ -1,5 +1,3 @@
-from app import celery
-
 from flask_restful import reqparse, Resource
 from utils.amazon_common import custom_json_response
 import json
@@ -30,7 +28,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 auth = HTTPBasicAuth()
 
 users = {
-    "admin": generate_password_hash("admin")
+    "admin": generate_password_hash("494E85F37AD34F748D7BBD4A1409F5AA")
 }
 
 @auth.verify_password
@@ -60,7 +58,7 @@ class Collection(Resource):
             payload = args.collection
             # payload=ev(payload)
             print(payload)
-            task_2.delay(payload)
+            task_2(payload)
 
             return custom_json_response(payload, "Success", 200)
         except Exception as err:
@@ -70,7 +68,7 @@ def process_browser_log_entry(entry):
     response = json.loads(entry['message'])['message']
     return response
 
-@celery.task(bind=True, trail=True)
+#celery.task(bind=True, trail=True)
 def task_2(self, payload):
 
     caps = DesiredCapabilities.CHROME

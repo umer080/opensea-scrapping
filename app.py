@@ -20,15 +20,6 @@ cache = Cache(server, config={'CACHE_TYPE': 'simple'})
 
 server.config['CORS_HEADERS'] = 'Content-Type'
 
-cors = CORS(server, resources={r"/*": {"origins": "*"}})
-
-server.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-server.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-
-celery = Celery(server.name, broker=server.config['CELERY_BROKER_URL'])
-celery.conf.update(server.config)
-
-
 server.app_context().push()
 
 
@@ -39,7 +30,3 @@ api.add_resource(NftOrderbook, '/nft-orderbook', '/nft-orderbook')
 # ---------------------nft------------------------------------
 from apis.collection import Collection
 api.add_resource(Collection, '/collection', '/collection')
-
-# ---------------------activity------------------------------------
-from apis.activities import Open
-api.add_resource(Open, '/activities', '/activities')

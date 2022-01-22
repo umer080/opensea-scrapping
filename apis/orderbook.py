@@ -1,5 +1,9 @@
+from scrapingbee import ScrapingBeeClient
 
+client = ScrapingBeeClient(api_key='3E411HQ2N1WG5EMXNGYNSG1D06OZOZH4MMGLD4B7PBL5E5QFV4MF4LCO40N3WF78OKYSTOQE2FCZJNEN')
 
+from bs4 import BeautifulSoup
+from lxml import etree #alternative of xpaths in beautifulsoup
 
 def common(soup,lxml_text):
     

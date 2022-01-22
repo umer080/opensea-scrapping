@@ -1,5 +1,3 @@
-from app import celery
-
 from flask_restful import reqparse, Resource
 from utils.amazon_common import custom_json_response
 import json
@@ -11,12 +9,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import cache
 from ast  import literal_eval as ev
 from .orderbook import common
+import time
+from scrapingbee import ScrapingBeeClient
+client = ScrapingBeeClient(api_key='3E411HQ2N1WG5EMXNGYNSG1D06OZOZH4MMGLD4B7PBL5E5QFV4MF4LCO40N3WF78OKYSTOQE2FCZJNEN')
+import asyncio
+from bs4 import BeautifulSoup
+from lxml import etree #alternative of xpaths in beautifulsoup
+import logging
 
+logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 auth = HTTPBasicAuth()
 
 users = {
-    "admin": generate_password_hash("admin")
+    "admin": generate_password_hash("494E85F37AD34F748D7BBD4A1409F5AA")
 }
 
 @auth.verify_password
@@ -44,17 +50,18 @@ class NftOrderbook(Resource):
             args = orderbook_parser.parse_args()
             print(args)
             payload = args.nft_address
+            logging.info(payload)
             # payload=ev(payload)
             print(payload)
-#            task_1.delay(payload)
+            asyncio.run(task_1(payload))
 
             return custom_json_response(payload, "Success", 200)
         except Exception as err:
-            return custom_json_response({}, str(err), 500)
+            return custom_json_response({}, str(err), 200)
 
 
-@celery.task()
-def task_1(self, payload):
+
+async def task_1(payload):
 
     response = client.get(payload)
 
