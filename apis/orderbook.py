@@ -466,3 +466,4 @@ def common(soup,lxml_text):
 
     print("----------------------Main Dict----------------------------")
     print(main_dict)
+    return main_dict

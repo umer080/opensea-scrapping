@@ -46,23 +46,29 @@ class NftOrderbook(Resource):
             payload = args.nft_address
             # payload=ev(payload)
             print(payload)
-            task_1.delay()
+#            task_1.delay(payload)
 
             return custom_json_response(payload, "Success", 200)
         except Exception as err:
             return custom_json_response({}, str(err), 500)
 
 
-@celery.task(bind=True, trail=True)
-def task_1(self):
-     
-    response = client.get('https://opensea.io/assets/0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d/4949',
-                        )
+@celery.task()
+def task_1(self, payload):
+
+    response = client.get(payload)
 
     print('Response HTTP Status Code: ', response.status_code)
     page_html = response.content
     soup = BeautifulSoup(page_html, "html.parser")
     lxml_text = etree.HTML(str(soup))
     #print(soup.prettify)
-    common(soup,lxml_text)
+    main_dict=common(soup,lxml_text)
+    sending_response=json.dumps(main_dict, default=str)
+    url="https://core-api.develop.blur.io/hooks/token-orderbook"
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    sent = requests.post(url,data=sending_response, headers=headers)
+    print(sent.json(), flush=True)
     # webhook

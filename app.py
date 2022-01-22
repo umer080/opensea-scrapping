@@ -22,22 +22,14 @@ server.config['CORS_HEADERS'] = 'Content-Type'
 
 cors = CORS(server, resources={r"/*": {"origins": "*"}})
 
+server.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+server.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
-celery = Celery(server.name)
+celery = Celery(server.name, broker=server.config['CELERY_BROKER_URL'])
 celery.conf.update(server.config)
-celery.conf.update(
-    task_serializer='pickle',
-    result_serializer='pickle',
-    accept_content=['pickle', 'json'],
-    result_backend='amqp://guest:guest@rabbit_mq:5672//',
-    broker_url='amqp://guest:guest@rabbit_mq:5672//'
-)
+
 
 server.app_context().push()
-
-# ---------------------recommend------------------------------------
-from apis.recommend_channel import RecommendChannel
-api.add_resource(RecommendChannel, '/recommend', '/recommend')
 
 
 # ---------------------nft------------------------------------
@@ -47,3 +39,7 @@ api.add_resource(NftOrderbook, '/nft-orderbook', '/nft-orderbook')
 # ---------------------nft------------------------------------
 from apis.collection import Collection
 api.add_resource(Collection, '/collection', '/collection')
+
+# ---------------------activity------------------------------------
+from apis.activities import Open
+api.add_resource(Open, '/activities', '/activities')
