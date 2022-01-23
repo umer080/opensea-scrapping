@@ -4,7 +4,7 @@ from flask_restful import Api
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
 
-from celery import Celery
+from tasks import make_celery
 
 server = Flask(__name__,
                static_url_path='',
@@ -13,6 +13,11 @@ server = Flask(__name__,
 
 server.config['SECRET_KEY'] = b'C\x1a!\xa2Q\xbd\xf5\xfdDx\xd0\x8e\x0c\x16\x04\x82'
 
+server.config.update(
+    broker_url='redis://localhost:6379',
+    result_backend='redis://localhost:6379'
+)
+celery = make_celery(server)
 
 api = Api(server)
 

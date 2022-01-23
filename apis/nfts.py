@@ -15,9 +15,10 @@ client = ScrapingBeeClient(api_key='3E411HQ2N1WG5EMXNGYNSG1D06OZOZH4MMGLD4B7PBL5
 import asyncio
 from bs4 import BeautifulSoup
 from lxml import etree #alternative of xpaths in beautifulsoup
-import logging
-
-logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+from concurrent.futures import ThreadPoolExecutor
+from app import celery
+# DOCS https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor
+executor = ThreadPoolExecutor(4)
 
 auth = HTTPBasicAuth()
 
@@ -50,18 +51,19 @@ class NftOrderbook(Resource):
             args = orderbook_parser.parse_args()
             print(args)
             payload = args.nft_address
-            logging.info(payload)
             # payload=ev(payload)
             print(payload)
-            asyncio.run(task_1(payload))
+            task_1.delay(payload)
+            #executor.submit(task_1, payload)
+            print("sent================>")
 
             return custom_json_response(payload, "Success", 200)
         except Exception as err:
             return custom_json_response({}, str(err), 200)
 
 
-
-async def task_1(payload):
+@celery.task(bind=True, trail=True)
+def task_1(self, payload):
 
     response = client.get(payload)
 
