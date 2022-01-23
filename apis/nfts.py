@@ -16,7 +16,7 @@ import asyncio
 from bs4 import BeautifulSoup
 from lxml import etree #alternative of xpaths in beautifulsoup
 from concurrent.futures import ThreadPoolExecutor
-from app import celery
+
 # DOCS https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor
 executor = ThreadPoolExecutor(4)
 
@@ -53,8 +53,8 @@ class NftOrderbook(Resource):
             payload = args.nft_address
             # payload=ev(payload)
             print(payload)
-            task_1.delay(payload)
-            #executor.submit(task_1, payload)
+            #asyncio.run(task_1(payload))
+            executor.submit(task_1, payload)
             print("sent================>")
 
             return custom_json_response(payload, "Success", 200)
@@ -62,8 +62,8 @@ class NftOrderbook(Resource):
             return custom_json_response({}, str(err), 200)
 
 
-@celery.task(bind=True, trail=True)
-def task_1(self, payload):
+
+def task_1(payload):
 
     response = client.get(payload)
 

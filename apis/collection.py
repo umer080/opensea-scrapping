@@ -21,7 +21,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-from app import celery
+
 from scrapingbee import ScrapingBeeClient
 client = ScrapingBeeClient(api_key='3E411HQ2N1WG5EMXNGYNSG1D06OZOZH4MMGLD4B7PBL5E5QFV4MF4LCO40N3WF78OKYSTOQE2FCZJNEN')
 from bs4 import BeautifulSoup
@@ -68,8 +68,7 @@ class Collection(Resource):
             payload = args.collection
             # payload=ev(payload)
             print(payload)
-            #executor.submit(task_2, payload)
-            task_2.delay(payload)
+            executor.submit(task_2, payload)
 
             return custom_json_response(payload, "Under process not live yet", 200)
         except Exception as err:
@@ -79,8 +78,8 @@ def process_browser_log_entry(entry):
     response = json.loads(entry['message'])['message']
     return response
 
-celery.task(bind=True, trail=True)
-def task_2(self, payload):
+#celery.task(bind=True, trail=True)
+def task_2(payload):
     payload=ev(payload)
     print(payload)
 
@@ -187,6 +186,7 @@ def task_2(self, payload):
         print(len(hrfs))
         print(hrfs)
         print("================")
+        driver.quit()
 
         full_final.extend(main_list)
         full_final.extend(hrfs)
@@ -194,3 +194,23 @@ def task_2(self, payload):
         print(len(full_final))
         for each_hrf in full_final:
             print(each_hrf)
+            response = client.get(each)
+            print('Response HTTP Status Code: ', response.status_code)
+            page_html = response.content
+            soup = BeautifulSoup(page_html, "html.parser")
+            lxml_text = etree.HTML(str(soup))
+            #print(soup.prettify)
+            main_dict=common(soup,lxml_text)
+            main_dict['collection']=payload
+            main_dict['items']=items.text
+            main_dict['owners']=owners.text
+            main_dict['floor_price']=floor_price.text
+            main_dict['volume_traded']=volume_traded.text
+
+            sending_response=json.dumps(main_dict, default=str)
+            url="https://core-api.develop.blur.io/hooks/collection-orderbook"
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            sent = requests.post(url,data=sending_response, headers=headers)
+            print(sent.json(), flush=True)
