@@ -70,7 +70,7 @@ class Collection(Resource):
             print(payload)
             executor.submit(task_2, payload)
 
-            return custom_json_response(payload, "Under process not live yet", 200)
+            return custom_json_response(payload, "Success", 200)
         except Exception as err:
             return custom_json_response({}, str(err), 500)
 
@@ -193,24 +193,34 @@ def task_2(payload):
         full_final=list(set(full_final))
         print(len(full_final))
         for each_hrf in full_final:
-            print(each_hrf)
-            response = client.get(each)
-            print('Response HTTP Status Code: ', response.status_code)
-            page_html = response.content
-            soup = BeautifulSoup(page_html, "html.parser")
-            lxml_text = etree.HTML(str(soup))
-            #print(soup.prettify)
-            main_dict=common(soup,lxml_text)
-            main_dict['collection']=payload
-            main_dict['items']=items.text
-            main_dict['owners']=owners.text
-            main_dict['floor_price']=floor_price.text
-            main_dict['volume_traded']=volume_traded.text
+            try:
+                print(each_hrf)
 
-            sending_response=json.dumps(main_dict, default=str)
-            url="https://core-api.develop.blur.io/hooks/collection-orderbook"
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            sent = requests.post(url,data=sending_response, headers=headers)
-            print(sent.json(), flush=True)
+                response = client.get(each_hrf)
+                print('Response HTTP Status Code: ', response.status_code)
+                page_html = response.content
+                soup = BeautifulSoup(page_html, "html.parser")
+                lxml_text = etree.HTML(str(soup))
+
+                main_dict=common(soup,lxml_text)
+                print(main_dict)
+                main_dict['collection']=i
+                main_dict['nft_address']=each_hrf
+                main_dict['items']=items.text
+                main_dict['owners']=owners.text
+                main_dict['floor_price']=floor_price.text
+                main_dict['volume_traded']=volume_traded.text
+
+                sending_response=json.dumps(main_dict, default=str)
+                print(sending_response)
+                url="https://core-api.develop.blur.io/hooks/collection-orderbook"
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                sent = requests.post(url,data=sending_response, headers=headers)
+                print(sent.json(), flush=True)
+
+                break
+
+            except Exception as err:
+                print(str(err))

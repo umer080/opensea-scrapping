@@ -3,17 +3,16 @@ from flask_restful import Api
 
 from flask_caching import Cache
 from flask_cors import CORS, cross_origin
+from flask_executor import Executor
 
-server = Flask(__name__,
-               static_url_path='',
-               static_folder='./static',
-               template_folder='./templates')
+
+server = Flask(__name__)
 
 server.config['SECRET_KEY'] = b'C\x1a!\xa2Q\xbd\xf5\xfdDx\xd0\x8e\x0c\x16\x04\x82'
 
 
 api = Api(server)
-
+executor = Executor(server)
 cache = Cache(server, config={'CACHE_TYPE': 'simple'})
 
 server.config['CORS_HEADERS'] = 'Content-Type'

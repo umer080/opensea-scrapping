@@ -15,10 +15,10 @@ client = ScrapingBeeClient(api_key='3E411HQ2N1WG5EMXNGYNSG1D06OZOZH4MMGLD4B7PBL5
 import asyncio
 from bs4 import BeautifulSoup
 from lxml import etree #alternative of xpaths in beautifulsoup
-from concurrent.futures import ThreadPoolExecutor
-
+#from concurrent.futures import ThreadPoolExecutor
+from app import executor
 # DOCS https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor
-executor = ThreadPoolExecutor(4)
+#executor = ThreadPoolExecutor(4)
 
 auth = HTTPBasicAuth()
 
@@ -71,9 +71,10 @@ def task_1(payload):
     page_html = response.content
     soup = BeautifulSoup(page_html, "html.parser")
     lxml_text = etree.HTML(str(soup))
-    #print(soup.prettify)
+
     main_dict=common(soup,lxml_text)
     sending_response=json.dumps(main_dict, default=str)
+    print(sending_response)
     url="https://core-api.develop.blur.io/hooks/token-orderbook"
     headers = {
         'Content-Type': 'application/json'
